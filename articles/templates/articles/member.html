@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+{% block style %}
+	<style>
+		.grad {
+			background: linear-gradient(#7CB9E8, #00308F);
+		}
+		.grad2 {
+			background: linear-gradient(#6495ED, white);
+		}
+		.grad3 {
+			background: linear-gradient(#7CB9E8, #ADD8E6);
+		}
+		.dohyun {
+			font-family: 'Do Hyeon', sans-serif;
+		}
+	</style>
+	<link href="https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap" rel="stylesheet">
+{% endblock style %}
+
+{% block context %}
+<div class='container col-6 '>
+	<div 
+		class='card bg-dark'
+		style='border-radius: 45px;'
+	>
+		<div class='card grad p-5 rounded-bottom border-0' style='border-radius: 45px;'>
+			<h2 class='dohyun'>모임명</h2>
+			<p>{{ article.title }}</p>
+			<hr>
+			<h2 class='dohyun'>장소</h2>
+			<p>{{ article.location }}</p>
+			<hr>
+			<h2 class='dohyun'>시각</h2>
+			<p>{{ article.meeting_date }}</p>
+			<hr>
+			<h2 class='dohyun'>인원수</h2>
+			<p class="memberCount">{{ member_count }} 명 / 전체 {{ article.member_limit }} 명</p>
+		</div>
+
+		<div class='card grad2 p-5 border-0' style='color: black;'>
+			<h2 class='dohyun'>멤버 목록</h2>
+			<div class="memberList">
+			{% for member in members %}
+					<div class="memberCard-{{ member.pk }} d-flex flex-row align-items-center justify-content-between">
+							{% if request.user != member %}
+								<p class='m-0 mt-2 bg-white rounded p-2'>{{member.nickname}}</p>
+								<form class="actionBtn" data-whataction="delete" data-applicant-pk="{{ member.pk }}">
+										{% csrf_token %}
+										<button class='btn btn-danger'>추방</button>
+								</form>
+							{% else %}
+								<p class='text-primary mt-2 m-0 bg-white rounded p-2'>{{member.nickname}} (나)</p>
+							{% endif %}
+					</div>
+					{% endfor %}
+			</div>
+		</div>
+		<div class='card grad3 p-5 rounded-top border-0' style='color: black; border-radius: 45px;'>
+			<h2 class='dohyun'>지원자 대기 목록</h2>
+		{% for applicant in applicants  %}
+				<div class="applicant-{{ applicant.pk }} d-flex flex-row align-items-center justify-content-between">
+						<p class='m-0 bg-white rounded p-2'>{{ applicant.nickname }}</p>
+						<div class='d-flex flex-row align-items-center gap-2'>
+							<form class="actionBtn" data-whataction="accept" data-applicant-pk="{{ applicant.pk }}">
+									{% csrf_token %}
+									<button class='btn btn-info'>수락</button>
+							</form>
+							<form class="actionBtn" data-whataction="reject" data-applicant-pk="{{ applicant.pk }}"> 
+									{% csrf_token %}
+									<button class='btn btn-danger'>거절</button>
+							</form>
+						</div>
+				</div>
+		{% endfor %}
+		</div>
+	
+</div>
+{% endblock context %}
+
+{% block script %}
+    <script>
+        function deleteMember(response, memberId) {
+            const memberDiv = document.querySelector(`.memberCard-${memberId}`)
+            console.log('hi')
+            memberDiv.innerHTML = ''
+
+            const memberCount = document.querySelector('.memberCount')
+            memberCount.innerText = response.memberCount
+        }
+
+        function updateApplicantState(response, applicantId) {
+            const applicantCard = document.querySelector(`.applicant-${applicantId}`)
+            applicantCard.innerHTML = ''
+            
+            const state = response.state
+            console.log(state)
+            if (state) {
+                const memberList = document.querySelector('.memberList')
+                const memberDiv = document.createElement('div')
+                memberDiv.setAttribute('class', `memberCard-${applicantId}`)
+                const newForm = document.createElement('form')
+                const newButton = document.createElement('button')
+                newForm.setAttribute('data-whataction', 'delete')
+                newForm.setAttribute('data-applicant-pk', applicantId)
+                newButton.innerText = 'delete'
+                newForm.appendChild(newButton)
+                newForm.addEventListener('submit', onSubmit)
+                const newMember = document.createElement('p')
+                memberDiv.append(newMember, newForm)
+                memberList.appendChild(memberDiv)
+                
+                const memberCount = document.querySelector('.memberCount')
+                memberCount.innerText = response.memberCount
+                newMember.innerText = response.applicantName
+            }
+        }
+
+        async function onSubmit(event) {
+            event.preventDefault()
+
+            const applicantId = event.target.dataset.applicantPk
+            const action = event.target.dataset.whataction
+
+            const url = `accept/`
+
+            const fdata = new FormData()
+            fdata.append('action', action)
+            fdata.append('applicantId', applicantId)
+
+            const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value
+            const config = {
+                headers: {'X-CSRFToken': csrftoken},
+            }
+
+            const response = await axios.post(url, fdata, config)
+            if (response.data.state == 'delete') {
+                deleteMember(response.data, applicantId)
+            }
+            else {
+                updateApplicantState(response.data, applicantId)
+            }
+        }
+
+        
+        function attachEvent(form) {
+            form.addEventListener('submit', onSubmit)
+        }
+
+        const actionForm = document.querySelectorAll('.actionBtn')
+        actionForm.forEach(attachEvent)
+    </script>
+{% endblock script %}   

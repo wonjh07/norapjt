@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block context %}
+
+	<div class="container d-flex flex-column align-items-center">
+		<header class="container d-flex my-3 col-12 col-md-8 col-lg-6 mx-auto"> <!-- col-6 빼기 //  col-12 col-md-8 col-lg-6 mx-auto 추가-->
+			<h1>UPDATE</h1>
+		</header>
+		<form action="" method="POST" enctype="multipart/form-data"
+		  class="card border-0 p-4 bg-dark col-12 col-md-8 col-lg-6 mx-auto"
+      style="padding: 100px"> <!-- col-6 빼기 //  col-12 col-md-8 col-lg-6 mx-auto 추가-->
+			{% csrf_token %}
+			<p>
+				지역{{ form.region }}
+			</p>
+			<p>
+				인원제한{{ form.member_limit }}
+			</p>
+			<p>
+				모임 일자{{ form.meeting_date }}
+			</p>
+			<p>
+				모임 시간{{ form.meeting_time }}
+			</p>
+			<p>
+				모임 장소{{ form.location }}
+			</p>
+			<p>
+				제목{{ form.title }}
+			</p>
+			<p>
+				상세 일정{{ form.content }}
+			</p>
+			<p>
+				대표 사진
+				{{ form.thumbnail }}
+			</p>
+
+
+			<div class="container p-0">
+				추가 사진
+				<input type="file" multiple name="photos" class="form-control-file">
+			</div>
+			<div class="preview"></div>
+			<button class="btn btn-danger mt-4">수정하기</button>
+		</form>
+	</div>
+
+{% endblock context %}

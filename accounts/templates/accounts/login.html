@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% load socialaccount %}
+
+{% block style %}
+<style>
+input {
+	padding: 2px 5px;
+}
+</style>
+{% endblock style %}
+
+{% block context %}
+
+<div class='container mt-4 d-flex flex-column justify-content-center align-items-center'>
+	<h1 class="mb-5">Login</h1>
+	<form action="" method="POST">
+		{% csrf_token %}
+		<div class="card border-0 bg-dark p-5 pt-4 d-flex flex-column gap-4">
+			<div class="">
+				<h5>ID</h5>{{ form.username }}
+			</div>
+			<div>
+				<h5>password</h5>{{ form.password }}
+			</div>
+			<button class='btn btn-info mt-3'>로그인</button>
+		</div>
+	</form>
+
+			{% comment %} google 로그인 버튼 
+			<div>
+				<a href="{% provider_login_url 'google' next='/' %}"
+				class="btn btn-info mt-3">Google login</a> {% endcomment %}
+
+</div>
+
+{% endblock context %}

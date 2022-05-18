@@ -1,0 +1,370 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block style %}
+	<link rel="stylesheet" href="{% static 'index.css' %}" type="text/css" />
+{% endblock style %}
+
+{% block context %}
+	<div class='container d-flex flex-row justify-content-between'>
+
+		<div class='container d-flex flex-column p-0 m-0 col-8'>
+
+			<div class='container p-0'>
+				<div class='container d-flex flex-row justify-content-between align-items-center p-0'>
+					<h2 class='m-0'>나의 일정</h2>
+					<a 
+						type="button"
+						href="{% url 'articles:create' %}"
+						class='btn btn-outline-danger'
+						style='height: 40px; width: 40px; border-radius: 20px;'
+					>+</a>
+				</div>
+				<hr>
+				<div id='myPlanList' style="height: 400px; overflow: auto">
+				</div>
+				
+				<div style='display: none;'>
+					<div id='sample'>
+						<a id='detail' class="test m-0" style="text-align: left;" href="">
+							<div class='card d-flex flex-row p-2 mb-3 mr-3 bgcard'>
+								<div class="thumbnail me-2">
+									<img src="" alt="" id="thumbnail" class="w-100 h-100">
+								</div>
+								<div>
+									<h1 id='title'></h1>
+									<h6 id="detaildata" class=""></h6>
+								</div>
+							</div>
+						</a>
+					</div>
+				</div>
+			</div>
+	
+			<div class='container mt-4 p-0'>
+				<h2>전체 일정</h2>
+				<hr>
+				<div id='totalPlanList' class='row row-cols-2 g-4'>
+					<p id='totalNothing'></p>
+				</div>
+				<div style='display: none;' id='sp'>
+					<div class='col' id='totalsample'>
+						<a id='totaldetail' class="test m-0" href="">
+							<div class="card bgcard">
+								<img src="" alt="" id="totalthumbnail" class="w-100 me-2 p-2">
+								<div class="card-body">
+									<h5 class="card-title" id='totaltitle'></h5>
+									<h6 id="totaldetaildata">시간 장소:</h6>
+								</div>
+							</div>
+						</a>
+					</div>
+
+				</div>
+			</div>
+		</div>
+
+		
+		<div class="container d-flex flex-row justify-content-end p-0 mx-2 w-auto" style='margin-top: 55px;'>
+			<div class="my-calendar m-0">
+				<div class="calendar-box">
+	
+					<div class="ctr-box clearfix">
+						<button type="button" title="prev" class="btn-cal prev">
+						</button>
+						<span class="cal-month"></span>
+						<span class="cal-year"></span>
+						<button type="button" title="next" class="btn-cal next">
+						</button>
+					</div>
+	
+					<table class="cal-table">
+						<thead>
+							<tr>
+								<th>S</th>
+								<th>M</th>
+								<th>T</th>
+								<th>W</th>
+								<th>T</th>
+								<th>F</th>
+								<th>S</th>
+							</tr>
+						</thead>
+						<tbody class="cal-body"></tbody>
+					</table>
+	
+				</div>
+			</div>
+		</div>
+
+	</div>
+
+{% endblock context %}
+
+{% block script %}
+	<script>
+		let myPlanList = document.querySelector('#myPlanList')
+		myPlanList.innerHTML = ''
+		let myPlan = ''
+
+		function planSet(articles) {
+			if (articles.length) {
+				articles.forEach((article) => {
+					let sample = document.querySelector('#sample').cloneNode(true)
+					let detail = sample.querySelector('#detail')
+					let title = sample.querySelector('#title')
+					let thumbnail = sample.querySelector('#thumbnail')
+					let detaildata = sample.querySelector('#detaildata')
+					title.innerText = article.title
+					detaildata.innerText = '장소: ' + article.location +', 시간: '+ article.meeting_time
+					detail.setAttribute('href', `http://127.0.0.1:8000/${article.id}`)
+					if (article.thumbnail) {
+						thumbnail.setAttribute('src', `${article.thumbnail}`)
+						thumbnail.classList.remove('invisible')
+					} else {
+						thumbnail.classList.add('invisible')
+					}
+					myPlanList.append(sample)
+				})
+			}
+			else {
+				myPlanList.innerHTML = '<p>일정이 없습니다 ㅠㅠ<p>'
+			}
+		}
+
+		async function fetchArticles(day, month, year) {
+			myPlanList.innerHTML = ''
+			const URL = `ajax/mine/`
+			const ttoday = `${year}-${month}-${day}`
+			try {
+				let articles = await axios.get(URL, { params: { ttoday: `${ttoday}`} })
+				planSet(articles.data)
+			} catch(err) {
+				alert(` 잠시후 다시 시도해주세요 \n ${err}`);
+			}
+		}
+
+		{% comment %} 임시로 만든 전체 일정 AJAX통신 {% endcomment %}
+		let totalPlanList = document.querySelector('#totalPlanList')
+		totalPlanList.innerHTML = ''
+
+		function totalplanSet(articles) {
+			if (articles.length) {
+				articles.forEach((article) => {
+					let totalsample = document.querySelector('#totalsample').cloneNode(true)
+					let totaldetail = totalsample.querySelector('#totaldetail')
+					let totaltitle = totalsample.querySelector('#totaltitle')
+					let totalthumbnail = totalsample.querySelector('#totalthumbnail')
+					let totaldetaildata = totalsample.querySelector('#totaldetaildata')
+					totaltitle.innerText = article.title
+					totaldetaildata.innerText = '장소: ' + article.location +', 시간: '+ article.meeting_time
+					totaldetail.setAttribute('href', `http://127.0.0.1:8000/${article.id}`)
+					if (article.thumbnail) {
+						totalthumbnail.setAttribute('src', `${article.thumbnail}`)
+						totalthumbnail.classList.remove('invisible')
+					} else {
+						totalthumbnail.classList.add('invisible')
+					}
+					totalPlanList.append(totalsample)
+				})
+			}
+			else {
+				totalPlanList.innerHTML = '<p>일정이 없습니다 ㅠㅠ<p>'
+			}
+		}
+
+		async function totalfetchArticles(day, month, year) {
+			totalPlanList.innerHTML = ''
+			const URL = `ajax/total/`
+			const ttoday = `${year}-${month}-${day}`
+			try {
+				let totalarticles = await axios.get(URL, { params: { ttoday: `${ttoday}`} })
+				totalplanSet(totalarticles.data)
+			} catch(err) {
+				alert(` 잠시후 다시 시도해주세요 \n ${err}`);
+			}
+		}
+
+		{% comment %} 여기까지 {% endcomment %}
+
+		function dateClean(day, month, year) {
+			if (month.length == 1) {
+				month = '0' + month
+			}
+			if (day.length == 1) {
+				day = '0' + day
+			}
+			fetchArticles(day, month, year)
+			totalfetchArticles(day, month, year)  // 전체 일정 보기 위해 임시로 추가
+		}
+
+		function initiate () {
+			const dt = new Date()
+			const year = dt.getFullYear()
+			let month = dt.getMonth()+1
+			const day = dt.getDate()
+			dateClean(String(day), String(month), String(year))
+		}
+
+		async function fetchMyPlanCalendar(year, month) {
+			const URL = `ajax/calendar/`
+			if (month.length == 1) {
+				month = '0' + month
+			}
+			const cDate = `${year}-${month}`
+			console.log(cDate)
+			try {
+				let articles = await axios.get(URL, { params: { month: cDate } })
+				console.log(articles)
+				return articles.data
+			} catch(err) {
+				alert(` 잠시후 다시 시도해주세요 \n ${err}`);
+			}
+		}
+
+		initiate()
+
+
+		// 캘린더 스크립트
+		const init = {
+			monList: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+			dayList: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+			today: new Date(),
+			monForChange: new Date().getMonth(),
+			activeDate: new Date(),
+			getFirstDay: (yy, mm) => new Date(yy, mm, 1),
+			getLastDay: (yy, mm) => new Date(yy, mm + 1, 0),
+			nextMonth: function () {
+				let d = new Date();
+				d.setDate(1);
+				d.setMonth(++this.monForChange);
+				this.activeDate = d;
+				return d;
+			},
+			prevMonth: function () {
+				let d = new Date();
+				d.setDate(1);
+				d.setMonth(--this.monForChange);
+				this.activeDate = d;
+				return d;
+			},
+			addZero: (num) => (num < 10) ? '0' + num : num,
+			activeDTag: null,
+			getIndex: function (node) {
+				let index = 0;
+				while (node = node.previousElementSibling) {
+					index++;
+				}
+				return index;
+			}
+		};
+		
+		const $calBody = document.querySelector('.cal-body');
+		const $btnNext = document.querySelector('.btn-cal.next');
+		const $btnPrev = document.querySelector('.btn-cal.prev');
+		
+		/**
+		 * @param {number} date
+		 * @param {number} dayIn
+		*/
+		function loadDate (date, dayIn) {
+			// document.querySelector('.cal-date').textContent = date;
+			// document.querySelector('.cal-day').textContent = init.dayList[dayIn];
+		}
+		
+		/**
+		 * @param {date} fullDate
+		 */
+		async function loadYYMM (fullDate) {
+			let yy = fullDate.getFullYear();
+			let mm = fullDate.getMonth();
+			let firstDay = init.getFirstDay(yy, mm);
+			let lastDay = init.getLastDay(yy, mm);
+			let markToday;  // for marking today date
+			
+			if (mm === init.today.getMonth() && yy === init.today.getFullYear()) {
+				markToday = init.today.getDate();
+			}
+
+			document.querySelector('.cal-month').textContent = init.monList[mm];
+			document.querySelector('.cal-year').textContent = yy;
+		
+			let trtd = '';
+			let startCount;
+			let countDay = 0;
+			let myPlan = await fetchMyPlanCalendar(`${yy}`, `${mm+1}`);
+			console.log(myPlan)
+			for (let i = 0; i < 6; i++) {
+				trtd += '<tr>';
+				for (let j = 0; j < 7; j++) {
+					if (i === 0 && !startCount && j === firstDay.getDay()) {
+						startCount = 1;
+					}
+					if (!startCount) {
+						trtd += '<td>'
+					} else {
+						let fullDate = yy + '.' + init.addZero(mm + 1) + '.' + init.addZero(countDay + 1);
+						trtd += '<td class="day';
+						trtd += (markToday && markToday === countDay + 1) ? ' today" ' : '"';
+						trtd += (myPlan[countDay + 1]) ? " style='color: lime;'" : '';
+						trtd += ` data-date="${countDay + 1}" data-fdate="${fullDate}">`;
+					}
+					trtd += (startCount) ? ++countDay : '';
+					if (countDay === lastDay.getDate()) { 
+						startCount = 0; 
+					}
+					trtd += '</td>';
+				}
+				trtd += '</tr>';
+			}
+			$calBody.innerHTML = trtd;
+		}
+		
+		/**
+		 * @param {string} val
+		 */
+		function createNewList (val) {
+			let id = new Date().getTime() + '';
+			let yy = init.activeDate.getFullYear();
+			let mm = init.activeDate.getMonth() + 1;
+			let dd = init.activeDate.getDate();
+			const $target = $calBody.querySelector(`.day[data-date="${dd}"]`);
+		
+			let date = yy + '.' + init.addZero(mm) + '.' + init.addZero(dd);
+		
+			let eventData = {};
+			eventData['date'] = date;
+			eventData['memo'] = val;
+			eventData['complete'] = false;
+			eventData['id'] = id;
+			init.event.push(eventData);
+			$todoList.appendChild(createLi(id, val, date));
+		}
+		
+		loadYYMM(init.today);
+		loadDate(init.today.getDate(), init.today.getDay());
+		
+		$btnNext.addEventListener('click', () => loadYYMM(init.nextMonth()));
+		$btnPrev.addEventListener('click', () => loadYYMM(init.prevMonth()));
+		
+		$calBody.addEventListener('click', (e) => {
+			if (e.target.classList.contains('day')) {
+				if (init.activeDTag) {
+					init.activeDTag.classList.remove('day-active');
+				}
+				let date = event.target.dataset.fdate;
+				let tDate = date.split('.')
+
+				dateClean(tDate[2], tDate[1], tDate[0])
+				let day = Number(e.target.textContent);
+				loadDate(day, e.target.cellIndex);
+				e.target.classList.add('day-active');
+				init.activeDTag = e.target;
+				init.activeDate.setDate(day);
+		
+			}
+		});
+
+	</script>
+{% endblock script %}
+

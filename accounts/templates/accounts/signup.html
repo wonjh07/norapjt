@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block style %}
+<style>
+input {
+	padding: 2px 5px;
+}
+</style>
+{% endblock style %}
+
+{% block context %}
+
+	<div class='container mt-4 d-flex flex-column justify-content-center align-items-center'>
+		<h1>회원가입</h1>
+		<form action="" method="POST">
+			{% csrf_token %}
+			<div class="card border-0 bg-dark d-flex p-5 flex-column gap-3 mt-5 mb-5">
+				<div class="d-flex gap-5">
+					<div>
+						<h5>아이디</h5>{{ form.username }}
+					</div>
+					<div>
+						<h5>닉네임</h5>{{ form.nickname }}
+					</div>
+				</div>
+				<div>
+					<h5>이메일</h5>{{ form.email }}
+				</div>
+				<div class="d-flex gap-5">
+					<div>
+						<h5>비밀번호</h5>{{ form.password1 }}
+					</div>
+					<div>
+						<h5>비밀번호 재확인</h5>{{ form.password2 }}
+					</div>
+				</div>
+				<button class='btn btn-info mt-5'>회원가입</button>
+			</div>
+		</form>
+	</div>
+
+
+{% endblock context %}

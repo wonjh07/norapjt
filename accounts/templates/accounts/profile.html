@@ -1,0 +1,117 @@
+{% extends 'base.html' %} {% block context %}
+<div class="container">
+  <h1>{{ person.nickname }}님의 프로필</h1>
+  {% comment %} 팔로우 기능 생성후 사용 {% with followers=person.followers.all
+  followings=person.followings.all %}
+  <div>팔로워 : {{ followers|length }} / 팔로우 : {{ followings|length }}</div>
+
+  <div>
+    {% if user != person %}
+    <form action="{% url 'accounts:follow' person.pk %}" method="POST">
+      {% csrf_token %} {% if user in followers %}
+      <input type="submit" value="언팔로우" />
+      {% else %}
+      <input type="submit" value="팔로우" />
+      {% endif %}
+    </form>
+    {% endif %}
+  </div>
+  {% endwith %} {% endcomment %}
+
+  <hr />
+
+  {% comment %} 이 사람이 작성한 게시글 목록 {% endcomment %}
+  <h2>{{ person.nickname }}님이 작성한 게시글</h2>
+  <div class="container">
+    <div class="row">
+      {% for article in person.articles.all %}
+      <article
+        class="col-6 col-md-4 mb-3 h-0 position-relative"
+        style="padding-bottom: -76%; overflow: hidden"
+      >
+        <div
+          class="bg-white px-0 w-100 position-relative"
+          style="overflow: hidden; padding-bottom: 133%; border-radius: 15px"
+        >
+          <a
+            href="{% url 'articles:detail' article.pk %}"
+            style="text-decoration: none"
+            class="position-absolute top-0 left-0 w-100 h-100"
+          >
+            <div class="h-50 w-100" style="overflow: hidden">
+              {% if article.thumbnail %}
+                <img
+                src="/media/{{ article.thumbnail }}"
+                alt="{{article.title}} thumbnail"
+                width="400"
+                height="400"
+                class="w-100 h-100"
+                style="object-fit: cover"
+                />
+              {% endif %}
+            </div>
+            <div class="bg-danger h-100 p-3">
+                <p class="mb-0 fs-5 text-dark">제목: {{ article.title }}</p>
+            </div>
+          </a>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+  </div>
+
+  <hr />
+
+  {% comment %} 이 사람이 작성한 댓글 목록 {% endcomment %}
+  <article class="px-2">
+    <h2>{{ person.nickname }}님이 작성한 댓글</h2>
+    {% for comment in comments %}
+    <a
+      href="{% url 'articles:detail' comment.article.pk %}"
+      class="text-decoration-none text-black"
+    >
+      <div
+        class="bg-white w-100 position-relative d-flex mb-3 align-items-center overflow-hidden"
+        style="border-radius: 12px"
+      >
+        <div
+          class="position-relative overflow-hidden p-3"
+          style="height: 200px; width: 200px"
+        >
+          <div
+            class="position-relative w-100 h-100 overflow-hidden"
+            style="border-radius: 12px"
+          >
+            {% if comment.article.thumbnail %}
+            <img
+              src="/media/{{ comment.article.thumbnail }}"
+              alt="{{comment.article.title}} thumbnail"
+              width="400"
+              height="400"
+              class="w-100"
+              style="object-fit: cover"
+            />
+            {% endif %}
+          </div>
+        </div>
+        <div class="align-self-start p-3">
+          <br>
+          <p><h3>제목: {{ comment.article.title }}</h3></p>
+          <p><h5>내 댓글: {{ comment.content }}</h5></p>
+        </div>
+      </div>
+    </a>
+    {% endfor %}
+  </article>
+
+  {% comment %}
+  <hr />
+
+  이 사람이 좋아요를 누른 게시글 목록
+  <h2>{{ person.nickname }}님이 좋아요를 누른 게시글</h2>
+  {% for like_article in person.like_articles.all %}
+  <p>{{ like_article.title }}</p>
+  {% endfor %} {% endcomment %}
+</div>
+
+{% endblock context %}

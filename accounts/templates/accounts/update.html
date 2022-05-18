@@ -1,0 +1,53 @@
+{% extends 'base.html' %} {% block style %}
+<style>
+  input {
+    padding: 2px 5px;
+  }
+</style>
+{% endblock style %} {% block context %}
+
+<div class="position-relative mx-auto" style="height: 90vh; max-width: 800px">
+  <div
+    class="position-absolute top-50 start-50 w-75"
+    style="transform: translate(-50%, -50%)"
+  >
+    <h1 class="">회원 정보 수정</h1>
+    <hr />
+    <div class="position-relative">
+      <form action="" method="POST">
+        {% csrf_token %}
+        <div class="px-1">
+          {{form}}
+          <button
+            class="rounded-pill border-0 bg-primary me-1 text-light p-1 px-2"
+          >
+            수정하기
+          </button>
+        </div>
+      </form>
+
+      <div
+        class="position-absolute bottom-0 end-0 d-flex flex-column justify-content-center gap-3"
+      >
+        <a
+          href="{% url 'accounts:change_password' %}"
+          class="btn btn-warning rounded-pill border-0"
+          >비밀번호수정</a
+        >
+
+        <form
+          action="{% url 'accounts:delete' %}"
+          method="POST"
+          class="d-inline"
+        >
+          {% csrf_token %}
+          <button class="btn btn-danger w-100 rounded-pill border-0">
+            회원탈퇴
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock context %}

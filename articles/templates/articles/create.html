@@ -1,0 +1,81 @@
+{% extends 'base.html' %} {% load static %} {% block context %}
+
+<div class="container d-flex flex-column align-items-center">
+  <header class="container d-flex col-12 col-md-8 col-lg-6 mx-auto my-3">
+    <h1>CREATE</h1>
+  </header>
+  <form
+    action=""
+    method="POST"
+    enctype="multipart/form-data"
+    class="card border-0 p-4 col-12 col-md-8 col-lg-6 mx-auto bg-dark"
+    style="padding: 100px"
+  >
+    {% csrf_token %} 
+    {% comment %} {{ form.as_p }} {% endcomment %}
+    
+    <p>
+      지역{{ form.region }}
+    </p>
+    <p>
+      인원제한{{ form.member_limit }}
+    </p>
+    <p>
+      모임 일자{{ form.meeting_date }}
+    </p>
+    <p>
+      모임 시간{{ form.meeting_time }}
+    </p>
+    <p>
+      모임 장소{{ form.location }}
+    </p>
+    <p>
+      제목{{ form.title }}
+    </p>
+    <p>
+      상세 일정{{ form.content }}
+    </p>
+    <p>
+      대표 사진
+      {{ form.thumbnail }}
+    </p>
+
+		<div class="container p-0">
+      추가 사진
+			<input type="file" multiple name="photos" class="form-control-file">
+		</div>
+    <div class="preview"></div>
+    <button class="btn btn-danger mt-4">작성하기</button>
+  </form>
+</div>
+
+{% endblock context %} {% block script %}
+<script>
+  const $ = (selector) => document.querySelector(selector);
+  const imgZone = $("input#id_thumbnail");
+  const previewContainer = $(".preview");
+
+  const updatEImageDisplay = () => {
+    while (previewContainer.firstChild) {
+      previewContainer.removeChild(previewContainer.firstChild);
+    }
+    const curFiles = $("input#id_thumbnail").files;
+    if (curFiles.length > 0) {
+      const fragment = document.createDocumentFragment();
+      const list = document.createElement("ul");
+      list.classList.add("list");
+      previewContainer.append(list);
+      for (const file of curFiles) {
+        const listItem = document.createElement("li");
+        const img = document.createElement("img");
+        img.width = "400";
+        img.src = URL.createObjectURL(file);
+        listItem.append(img);
+        list.append(listItem);
+      }
+      previewContainer.append(fragment);
+    }
+  };
+  imgZone.addEventListener("change", updatEImageDisplay);
+</script>
+{% endblock script %}
